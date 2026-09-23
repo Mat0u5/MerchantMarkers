@@ -22,13 +22,13 @@ import com.anthonyhilyard.merchantmarkers.render.Markers;
 import com.anthonyhilyard.merchantmarkers.render.Markers.MarkerResource;
 import com.google.gson.JsonObject;
 
+import net.minecraft.world.entity.npc.villager.VillagerData;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.EntityRenderer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.npc.VillagerData;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -73,7 +73,7 @@ public class XaeroMinimapHandler implements ResourceManagerReloadListener
 		setupDynamicIcons();
 
 		// Clear the minimap icon resources cache.
-		if (XaeroMinimap.instance != null && XaeroMinimap.instance.getInterfaces() != null)
+		if (XaeroMinimap.instance != null)
 		{
 			XaeroMinimap.instance.getMinimap().getMinimapFBORenderer().resetEntityIconsResources();
 		}
@@ -103,7 +103,7 @@ public class XaeroMinimapHandler implements ResourceManagerReloadListener
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 
 		// Maybe it's just not loaded yet?  Bail for now.
-		if (manager.getResource(resource.texture()).isEmpty() && Minecraft.getInstance().getTextureManager().getTexture(resource.texture(), null) == null)
+		if (manager.getResource(resource.texture()).isEmpty() && Minecraft.getInstance().getTextureManager().getTexture(resource.texture()) == null)
 		{
 			return Markers.getEmptyInputStream();
 		}
@@ -167,11 +167,11 @@ public class XaeroMinimapHandler implements ResourceManagerReloadListener
 
 		if (manager instanceof ReloadableResourceManager reloadableManager)
 		{
-			Supplier<Collection<ResourceLocation>> delayedResources = () -> reloadableManager.listResources("textures/entity/villager/markers", s -> s.toString().endsWith(".png")).keySet();
+			Supplier<Collection<Identifier>> delayedResources = () -> reloadableManager.listResources("textures/entity/villager/markers", s -> s.toString().endsWith(".png")).keySet();
 
 			if (!reloadableManager.listeners.contains(INSTANCE))
 			{
-				Services.getReloadListenerRegistrar().registerListener(INSTANCE, ResourceLocation.fromNamespaceAndPath(MerchantMarkers.MODID, "xaerominimaphandler"));
+				Services.getReloadListenerRegistrar().registerListener(INSTANCE, Identifier.fromNamespaceAndPath(MerchantMarkers.MODID, "xaerominimaphandler"));
 			}
 
 			// If we're showing icons on the minimap, setup proxies for the villager icon definitions and icons themselves.
@@ -191,11 +191,11 @@ public class XaeroMinimapHandler implements ResourceManagerReloadListener
 					maxLevel = VillagerData.MAX_VILLAGER_LEVEL + 10;
 				}
 
-				dynamicPack.registerResource(PackType.CLIENT_RESOURCES, ResourceLocation.fromNamespaceAndPath("xaerominimap", "entity/icon/definition/minecraft/villager.json"), () -> {
+				dynamicPack.registerResource(PackType.CLIENT_RESOURCES, Identifier.fromNamespaceAndPath("xaerominimap", "entity/icon/definition/minecraft/villager.json"), () -> {
 
 					// Dynamically build the .json file to include all current villager markers available, with dynamic proxies for each.
 					JsonObject variants = new JsonObject();
-					for (ResourceLocation marker : delayedResources.get())
+					for (Identifier marker : delayedResources.get())
 					{
 						for (int i = minLevel; i <= maxLevel; i++)
 						{
@@ -212,7 +212,7 @@ public class XaeroMinimapHandler implements ResourceManagerReloadListener
 					return new ByteArrayInputStream(result.toString().getBytes());
 				});
 
-				for (ResourceLocation marker : delayedResources.get())
+				for (Identifier marker : delayedResources.get())
 				{
 					String[] components = marker.getPath().split("/");
 					String iconName = components[components.length - 1].replace(".png", "");
@@ -220,10 +220,10 @@ public class XaeroMinimapHandler implements ResourceManagerReloadListener
 					for (int i = minLevel; i <= maxLevel; i++)
 					{
 						final int level = i;
-						ResourceLocation markerLocation = ResourceLocation.fromNamespaceAndPath("xaerominimap", "entity/icon/sprite/" + marker.getPath().replace(".png", "-" + String.valueOf(i) + ".png"));
+						Identifier markerLocation = Identifier.fromNamespaceAndPath("xaerominimap", "entity/icon/sprite/" + marker.getPath().replace(".png", "-" + String.valueOf(i) + ".png"));
 
 						// If this location is already registered in Minecraft's texture manager, release it first.
-						if (minecraft.getTextureManager().getTexture(markerLocation, null) != null)
+						if (minecraft.getTextureManager().getTexture(markerLocation) != null)
 						{
 							minecraft.execute(() -> minecraft.getTextureManager().release(markerLocation));
 						}
@@ -254,7 +254,7 @@ public class XaeroMinimapHandler implements ResourceManagerReloadListener
 			// If we're not showing icons on the minimap, just setup a default icons definition file.
 			else
 			{
-				dynamicPack.registerResource(PackType.CLIENT_RESOURCES, ResourceLocation.fromNamespaceAndPath("xaerominimap", "entity/icon/definition/minecraft/villager.json"), () -> {
+				dynamicPack.registerResource(PackType.CLIENT_RESOURCES, Identifier.fromNamespaceAndPath("xaerominimap", "entity/icon/definition/minecraft/villager.json"), () -> {
 
 					// Dynamically build the .json file to include all current villager markers available, with dynamic proxies for each.
 					JsonObject variants = new JsonObject();

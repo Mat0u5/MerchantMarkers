@@ -31,7 +31,7 @@ import com.anthonyhilyard.merchantmarkers.render.Markers.MarkerResource;
 import dev.ftb.mods.ftbchunks.client.mapicon.EntityMapIcon;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.FallbackResourceManager;
@@ -51,7 +51,7 @@ public class FTBChunksHandler implements ResourceManagerReloadListener
 	private static BufferedImage iconOverlayImage = null;
 	private static BufferedImage numberOverlayImage = null;
 
-	public static final ResourceLocation villagerTexture = ResourceLocation.fromNamespaceAndPath("ftbchunks", "textures/faces/minecraft/villager.png");
+	public static final Identifier villagerTexture = Identifier.fromNamespaceAndPath("ftbchunks", "textures/faces/minecraft/villager.png");
 	private static Supplier<InputStream> defaultVillagerResource = null;
 
 	private static MethodHandle getEntity = null;
@@ -87,7 +87,7 @@ public class FTBChunksHandler implements ResourceManagerReloadListener
 			final TextureManager textureManager = minecraft.getTextureManager();
 
 			// If this location is already registered in Minecraft's texture manager, release it first.
-			if (textureManager.getTexture(villagerTexture, null) != null)
+			if (textureManager.getTexture(villagerTexture) != null)
 			{
 				minecraft.executeBlocking(() -> {
 					textureManager.release(villagerTexture);
@@ -207,7 +207,7 @@ public class FTBChunksHandler implements ResourceManagerReloadListener
 		{
 			if (!reloadableManager.listeners.contains(INSTANCE))
 			{
-				Services.getReloadListenerRegistrar().registerListener(INSTANCE, ResourceLocation.fromNamespaceAndPath(MerchantMarkers.MODID, "ftbchunkshandler"));
+				Services.getReloadListenerRegistrar().registerListener(INSTANCE, Identifier.fromNamespaceAndPath(MerchantMarkers.MODID, "ftbchunkshandler"));
 			}
 
 			// If we haven't grabbed the default villager texture yet, do so now.

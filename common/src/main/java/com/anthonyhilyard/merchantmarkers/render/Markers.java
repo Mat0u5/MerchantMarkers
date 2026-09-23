@@ -12,33 +12,30 @@ import com.anthonyhilyard.merchantmarkers.config.MerchantMarkersConfig.OverlayTy
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 
+import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.entity.npc.villager.VillagerProfession;
+import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
-import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.npc.Villager;
-import net.minecraft.world.entity.npc.VillagerProfession;
-import net.minecraft.world.entity.npc.WanderingTrader;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.trading.Merchant;
@@ -47,13 +44,13 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class Markers
 {
-	public static record MarkerResource(ResourceLocation texture, OverlayType overlay, int level) {}
+	public static record MarkerResource(Identifier texture, OverlayType overlay, int level) {}
 
-	public static final ResourceLocation MARKER_ARROW = ResourceLocation.fromNamespaceAndPath(MerchantMarkers.MODID, "textures/entity/villager/arrow.png");
-	public static final ResourceLocation ICON_OVERLAY = ResourceLocation.fromNamespaceAndPath(MerchantMarkers.MODID, "textures/entity/villager/overlay.png");
-	public static final ResourceLocation NUMBER_OVERLAY = ResourceLocation.fromNamespaceAndPath(MerchantMarkers.MODID, "textures/entity/villager/numbers.png");
-	public static final ResourceLocation DEFAULT_ICON = ResourceLocation.fromNamespaceAndPath(MerchantMarkers.MODID, "textures/entity/villager/default.png");
-	public static final ResourceLocation EMPTY_MARKER = ResourceLocation.fromNamespaceAndPath(MerchantMarkers.MODID, "textures/entity/villager/empty.png");
+	public static final Identifier MARKER_ARROW = Identifier.fromNamespaceAndPath(MerchantMarkers.MODID, "textures/entity/villager/arrow.png");
+	public static final Identifier ICON_OVERLAY = Identifier.fromNamespaceAndPath(MerchantMarkers.MODID, "textures/entity/villager/overlay.png");
+	public static final Identifier NUMBER_OVERLAY = Identifier.fromNamespaceAndPath(MerchantMarkers.MODID, "textures/entity/villager/numbers.png");
+	public static final Identifier DEFAULT_ICON = Identifier.fromNamespaceAndPath(MerchantMarkers.MODID, "textures/entity/villager/default.png");
+	public static final Identifier EMPTY_MARKER = Identifier.fromNamespaceAndPath(MerchantMarkers.MODID, "textures/entity/villager/empty.png");
 
 	private static Supplier<InputStream> emptyMarkerResource = null;
 
@@ -86,7 +83,7 @@ public class Markers
 		if (entity instanceof Villager)
 		{
 			// If the profession name contains any colons, replace them with double underscores.
-			iconName = ((Villager)entity).getVillagerData().getProfession().toString().replace(":","__");
+			iconName = ((Villager)entity).getVillagerData().profession().toString().replace(":","__");
 		}
 		else if (entity instanceof WanderingTrader)
 		{
@@ -103,7 +100,7 @@ public class Markers
 			// Check if there is a marker with this profession name.
 			Minecraft minecraft = Minecraft.getInstance();
 			ResourceManager manager = minecraft.getResourceManager();
-			if (!manager.getResource(ResourceLocation.fromNamespaceAndPath(MerchantMarkers.MODID, "textures/entity/villager/markers/" + iconName + ".png")).isPresent())
+			if (!manager.getResource(Identifier.fromNamespaceAndPath(MerchantMarkers.MODID, "textures/entity/villager/markers/" + iconName + ".png")).isPresent())
 			{
 				// This isn't a valid profession name, so return a blank string.
 				iconName = "";
@@ -117,7 +114,7 @@ public class Markers
 		int level = 0;
 		if (MerchantMarkersConfig.getInstance().showLevels() && entity instanceof Villager)
 		{
-			level = ((Villager)entity).getVillagerData().getLevel();
+			level = ((Villager)entity).getVillagerData().level();
 		}
 		return level;
 	}
@@ -161,7 +158,7 @@ public class Markers
 
 			poseStack.pushPose();
 			poseStack.translate(0.0D, (double)entityHeight, 0.0D);
-			poseStack.mulPose(renderer.entityRenderDispatcher.cameraOrientation());
+			poseStack.mulPose(renderer.entityRenderDispatcher.camera.rotation());
 			poseStack.scale(0.025F, -0.025F, 0.025F);
 
 			final boolean depthTestEnabled = GL11.glIsEnabled(GL11.GL_DEPTH_TEST);
@@ -246,7 +243,7 @@ public class Markers
 		{
 			case ITEMS:
 			{
-				ResourceLocation associatedItemKey = MerchantMarkersConfig.getInstance().getAssociatedItem(professionName);
+				Identifier associatedItemKey = MerchantMarkersConfig.getInstance().getAssociatedItem(professionName);
 				if (associatedItemKey != null && BuiltInRegistries.ITEM.containsKey(associatedItemKey))
 				{
 					Item associatedItem = BuiltInRegistries.ITEM.getOptional(associatedItemKey).get();
@@ -255,7 +252,7 @@ public class Markers
 					BakedModel bakedModel = itemRenderer.getModel(new ItemStack(associatedItem), (Level)null, minecraft.player, 0);
 
 					TextureAtlasSprite sprite = bakedModel.getParticleIcon();
-					ResourceLocation spriteLocation = ResourceLocation.fromNamespaceAndPath(sprite.atlasLocation().getNamespace(), String.format("textures/%s%s", sprite.atlasLocation().getPath(), ".png"));
+					Identifier spriteLocation = Identifier.fromNamespaceAndPath(sprite.atlasLocation().getNamespace(), String.format("textures/%s%s", sprite.atlasLocation().getPath(), ".png"));
 					result = new MarkerResource(spriteLocation, overlayType, level);
 				}
 				break;
@@ -263,7 +260,7 @@ public class Markers
 			case JOBS:
 			{
 				// If the entity is a villager, find the (first) job block for their profession.
-				VillagerProfession profession = BuiltInRegistries.VILLAGER_PROFESSION.getValue(ResourceLocation.tryParse(professionName.replace("__", ":")));
+				VillagerProfession profession = BuiltInRegistries.VILLAGER_PROFESSION.getValue(Identifier.tryParse(professionName.replace("__", ":")));
 				if (profession != VillagerProfession.NONE)
 				{
 					List<BlockState> jobBlockStates = BuiltInRegistries.POINT_OF_INTEREST_TYPE.registryKeySet().stream()
@@ -277,7 +274,7 @@ public class Markers
 						BakedModel bakedModel = blockRenderer.getBlockModel(jobBlockStates.iterator().next());
 
 						TextureAtlasSprite sprite = bakedModel.getParticleIcon();
-						ResourceLocation spriteLocation = ResourceLocation.fromNamespaceAndPath(sprite.atlasLocation().getNamespace(), String.format("textures/%s%s", sprite.atlasLocation().getPath(), ".png"));
+						Identifier spriteLocation = Identifier.fromNamespaceAndPath(sprite.atlasLocation().getNamespace(), String.format("textures/%s%s", sprite.atlasLocation().getPath(), ".png"));
 						result = new MarkerResource(spriteLocation, overlayType, level);
 					}
 				}
@@ -287,7 +284,7 @@ public class Markers
 			default:
 			{
 				// Check if the given resource exists, otherwise use the default icon.
-				ResourceLocation iconResource = ResourceLocation.fromNamespaceAndPath(MerchantMarkers.MODID, String.format("textures/entity/villager/markers/%s.png", professionName));
+				Identifier iconResource = Identifier.fromNamespaceAndPath(MerchantMarkers.MODID, String.format("textures/entity/villager/markers/%s.png", professionName));
 				if (minecraft.getResourceManager().getResource(iconResource).isPresent())
 				{
 					result = new MarkerResource(iconResource, overlayType, level);
@@ -369,12 +366,12 @@ public class Markers
 		method.accept(8, 8, 8, 8, (resource.overlay().value() % 2) * 8, (resource.overlay().value() / 2) * 8);
 	}
 
-	private static void renderIcon(ResourceLocation icon, PoseStack poseStack, int x, int y, float alpha)
+	private static void renderIcon(Identifier icon, PoseStack poseStack, int x, int y, float alpha)
 	{
 		renderIcon(icon, poseStack, x, y, 16, 16, 0, 1, 0, 1, alpha);
 	}
 
-	private static void renderIcon(ResourceLocation icon, PoseStack poseStack, int x, int y, int w, int h, float u0, float u1, float v0, float v1, float alpha)
+	private static void renderIcon(Identifier icon, PoseStack poseStack, int x, int y, int w, int h, float u0, float u1, float v0, float v1, float alpha)
 	{
 		Matrix4f matrix = poseStack.last().pose();
 

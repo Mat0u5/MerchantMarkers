@@ -6,6 +6,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 
 import net.minecraft.client.KeyMapping;
 
+import net.minecraft.resources.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.GLFW;
@@ -17,7 +18,7 @@ public class MerchantMarkers
 
 	public static boolean comparisonsActive = false;
 	public static final KeyMapping showMarkers = Services.getKeyMappingRegistrar().registerMapping(new KeyMapping("merchantmarkers.key.showMarkers",
-										InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT, "merchantmarkers.key.categories.merchantMarkers"));
+										InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT, new KeyMapping.Category(Identifier.fromNamespaceAndPath(MODID, "merchantmarkers.key.categories.merchantMarkers"))));
 
 	public static void init()
 	{

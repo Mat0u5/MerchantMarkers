@@ -18,7 +18,7 @@ import com.google.common.collect.Lists;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 
 public class MerchantMarkersConfig extends IcebergConfig<MerchantMarkersConfig>
@@ -132,20 +132,20 @@ public class MerchantMarkersConfig extends IcebergConfig<MerchantMarkersConfig>
 		return OverlayType.LEVEL.equals(OverlayType.fromValue(overlayIndex.get()).orElse(null));
 	}
 
-	public ResourceLocation getAssociatedItem(String profession)
+	public Identifier getAssociatedItem(String profession)
 	{
 		Map<String, Object> configuredItems = associatedItems.get();
-		ResourceLocation resourceLocation = ResourceLocation.tryParse((String)configuredItems.get(profession));
+		Identifier identifier = Identifier.tryParse((String)configuredItems.get(profession));
 		if (configuredItems.containsKey(profession) && 
 			configuredItems.get(profession) instanceof String &&
-			resourceLocation != null)
+				identifier != null)
 		{
-			return resourceLocation;
+			return identifier;
 		}
 
 		if (defaultAssociatedItems.containsKey(profession))
 		{
-			return ResourceLocation.tryParse((String)defaultAssociatedItems.get(profession));
+			return Identifier.tryParse((String)defaultAssociatedItems.get(profession));
 		}
 
 		return null;
@@ -154,7 +154,7 @@ public class MerchantMarkersConfig extends IcebergConfig<MerchantMarkersConfig>
 	private static boolean validateAssociatedItems(Object value)
 	{
 		// Value must be a string and a valid resource location.
-		if (!(value instanceof String str) || ResourceLocation.tryParse(str) == null)
+		if (!(value instanceof String str) || Identifier.tryParse(str) == null)
 		{
 			return false;
 		}

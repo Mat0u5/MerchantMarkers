@@ -8,7 +8,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-import dev.ftb.mods.ftbchunks.client.mapicon.EntityIcons;
 import dev.ftb.mods.ftbchunks.client.mapicon.EntityMapIcon;
 import dev.ftb.mods.ftbchunks.client.FTBChunksClient;
 import dev.ftb.mods.ftbchunks.api.client.icon.MapType;
@@ -20,12 +19,12 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 @Mixin(FTBChunksClient.class)
 public class FTBChunksClientMixin
 {
-	private final static ResourceLocation VILLAGER_LOCATION = ResourceLocation.withDefaultNamespace("villager");
+	private final static Identifier VILLAGER_LOCATION = Identifier.withDefaultNamespace("villager");
 
 	@Redirect(method = "mapIcons", at = @At(value = "INVOKE", target = "Ldev/ftb/mods/ftbchunks/client/mapicon/EntityIcons;get(Lnet/minecraft/world/entity/Entity;)Ldev/ftb/mods/ftblibrary/icon/Icon;"), require = 0)
 	public Icon redirectGet(Entity entity)
