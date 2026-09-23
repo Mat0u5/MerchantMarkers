@@ -33,7 +33,7 @@ configurations {
 dependencies {
 	forge "net.minecraftforge:forge:$rootProject.forgeVersion"
 
-	modApi 'curse.maven:xaerominimap-263420:5437647'
+	modApi 'curse.maven:xaerominimap-263420:8849892'
 	//modImplementation group: 'info.journeymap', name: 'journeymap-api-forge', version: "$rootProject.journeymapVersion-SNAPSHOT", changing: true
 
 	common(project(path: ':common', configuration: 'namedElements')) { transitive false }

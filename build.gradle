@@ -1,7 +1,7 @@
 plugins {
 	id 'io.github.goooler.shadow' version '8.1.7' apply false
 	id 'dev.architectury.loom' version '1.13-SNAPSHOT' apply false
-	id 'io.github.goooler.shadow' version '8.1.7' apply false
+	id 'architectury-plugin' version '3.4-SNAPSHOT'
 }
 
 apply plugin: 'architectury-plugin'
@@ -38,7 +38,7 @@ subprojects {
 		minecraft "net.minecraft:minecraft:$rootProject.minecraftVersion"
 		mappings loom.officialMojangMappings()
 
-		modImplementation files("../libs/Iceberg-1.21.3-common-1.2.10.jar")
+		modImplementation files("../libs/Iceberg-1.21.11-common-1.4.0.2.jar")
 	}
 
 	java {

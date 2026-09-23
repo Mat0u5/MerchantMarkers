@@ -34,7 +34,7 @@ repositories {
 dependencies {
 	neoForge "net.neoforged:neoforge:$rootProject.neoforgeVersion"
 
-	modApi 'curse.maven:xaerominimap-263420:5437649'
+	modApi 'curse.maven:xaerominimap-263420:8849891'
 	modApi group: 'info.journeymap', name: 'journeymap-api-neoforge', version: "$rootProject.journeymapVersion-SNAPSHOT", changing: true
 
 	common(project(path: ':common', configuration: 'namedElements')) { transitive false }
