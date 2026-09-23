@@ -5,7 +5,6 @@ import com.anthonyhilyard.merchantmarkers.client.MerchantMarkersClient;
 import com.anthonyhilyard.merchantmarkers.forge.compat.OptifineHandler;
 
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.eventbus.api.listener.Priority;
 import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
@@ -32,7 +31,7 @@ public class MerchantMarkersForgeClient
 		// If optifine is installed, we have to do some hacks to ensure it doesn't break markers.
 		if (OptifineHandler.optifineInstalled())
 		{
-			MinecraftForge.EVENT_BUS.addListener((ServerStartedEvent serverStartedEvent) -> { OptifineHandler.init(); });
+			ServerStartedEvent.BUS.addListener((ServerStartedEvent serverStartedEvent) -> { OptifineHandler.init(); });
 		}
 	}
 }

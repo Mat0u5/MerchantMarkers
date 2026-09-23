@@ -5,6 +5,7 @@
 	"plugin": "com.anthonyhilyard.merchantmarkers.mixin.MixinConfig",
 	"client": [
 		"EntityRenderDispatcherMixin",
+		"EntityRenderStateMixin",
 		"FTBChunksClientMixin",
 		"FTBChunksMapIconWidgetMixin",
 		"MultiPackResourceManagerMixin"

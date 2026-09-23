@@ -2,32 +2,41 @@ package com.anthonyhilyard.merchantmarkers.mixin;
 
 import com.anthonyhilyard.merchantmarkers.MerchantMarkers;
 import com.anthonyhilyard.merchantmarkers.config.MerchantMarkersConfig;
+import com.anthonyhilyard.merchantmarkers.render.IMarkerHolder;
 import com.anthonyhilyard.merchantmarkers.render.Markers;
 import com.mojang.blaze3d.vertex.PoseStack;
-
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
-import net.minecraft.client.renderer.entity.EntityRenderer;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.world.entity.Entity;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(EntityRenderDispatcher.class)
 public abstract class EntityRenderDispatcherMixin
 {
-	@Inject(method = "render(Lnet/minecraft/world/entity/Entity;DDDFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/renderer/entity/EntityRenderer;)V",
-			at = @At(value  = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/EntityRenderer;render(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", shift = Shift.BEFORE))
-	private <E extends Entity, S extends EntityRenderState> void render(E entity, double x, double y, double z, float partialTick, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight, EntityRenderer<? super E, S> entityRenderer, CallbackInfo info)
+	@Inject(method = "extractEntity", at = @At("RETURN"))
+	private <E extends Entity> void saveRenderDataMarker(E entity, float partialTick, CallbackInfoReturnable<EntityRenderState> info)
 	{
+		Markers.MarkerRenderData marker = null;
 		if (MerchantMarkers.showMarkers.isDown() || MerchantMarkersConfig.getInstance().alwaysShow.get())
 		{
-			// Try rendering markers now, before we render the nameplates.
-			Markers.renderMarker(entityRenderer, entity, entity.getDisplayName(), poseStack, multiBufferSource, packedLight);
+			marker = Markers.extractMarker((EntityRenderDispatcher)(Object)this, entity);
+		}
+		((IMarkerHolder)info.getReturnValue()).setMerchantMarkersRenderData(marker);
+	}
+
+	@Inject(method = "submit", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/EntityRenderer;submit(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V"))
+	private <S extends EntityRenderState> void submitMarker(S renderState, CameraRenderState cameraRenderState, double x, double y, double z, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CallbackInfo info)
+	{
+		Markers.MarkerRenderData marker = ((IMarkerHolder)renderState).getMerchantMarkersRenderData();
+		if (marker != null)
+		{
+			Markers.submitMarker(marker, poseStack, submitNodeCollector, cameraRenderState);
 		}
 	}
 }
