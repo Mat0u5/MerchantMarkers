@@ -18,7 +18,7 @@ public class MerchantMarkers
 
 	public static boolean comparisonsActive = false;
 	public static final KeyMapping showMarkers = Services.getKeyMappingRegistrar().registerMapping(new KeyMapping("merchantmarkers.key.showMarkers",
-										InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT, new KeyMapping.Category(Identifier.fromNamespaceAndPath(MODID, "merchantmarkers.key.categories.merchantMarkers"))));
+										InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT, KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MODID, "merchantmarkers"))));
 
 	public static void init()
 	{
